@@ -29,17 +29,18 @@ void setup()
 void loop()
 {
   distance = 0.01723 * readUltrasonicDistance(4, 2);
-  if (distance <= 30) {
+  if (distance <= 120) {
     printON();
     isOff = false;
+    isOn = true;
     //delay(10000); // Wait for 10000 millisecond(s)
     delay(3000);
   } else {
     printOFF();
       isOn = false;
+      isOff = true;
   }
 }
-
 
 
 void printOFF() {
@@ -48,7 +49,7 @@ void printOFF() {
     digitalWrite(led, LOW);
     digitalWrite(LED_BUILTIN, LOW);
   }
-  isOff = true;
+  
 }
 
 void printON() {
@@ -57,6 +58,5 @@ void printON() {
     Serial.println("ON");
     digitalWrite(led, HIGH);  // turn LED On
     digitalWrite(LED_BUILTIN, HIGH);
-  }
-  isOn = true;
+  }  
 }

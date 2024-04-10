@@ -23,6 +23,7 @@ void loop() {
   } else {        //no motion detected
     printOFF();
     isOn = false;
+    isOff = true;
   }
 }
 
@@ -33,7 +34,7 @@ void printOFF() {
     digitalWrite(led, LOW);
     digitalWrite(LED_BUILTIN, LOW);
   }
-  isOff = true;
+  
 }
 
 void printON() {

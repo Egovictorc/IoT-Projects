@@ -144,8 +144,7 @@ void loop() {
       } else {
         status_off(reader);
         //Serial.print(reader);
-        //Serial.print(F("Absent "));
-        
+        //Serial.print(F("Absent "));       
         break;
       }
     }

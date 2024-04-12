@@ -168,47 +168,45 @@ print RFID tag
 //   //return b - a;
 // }
 
-void serial_print(String ids[], int count) {
-  String sorted_id_str = "";
-  for (uint8_t i = 0; i < count; i++) {
-    sorted_id_str += ids[i];
-  }
-  Serial.println("OFF_" + sorted_id_str);
-}
+// void serial_print(String ids[], int count) {
+//   String sorted_id_str = "";
+//   for (uint8_t i = 0; i < count; i++) {
+//     sorted_id_str += ids[i];
+//   }
+//   Serial.println("OFF_" + sorted_id_str);
+// }
 
 // print multiple OFF Readers sorted
-void printOFF(int id) {
-  String ids = String(id);
-  for (uint8_t i = 0; i < numReaders; i++) {
-    if (offCount[i] == 1) {
-      ids += String(i);
-    }
-  }
-
-  String id_arr[ids.length()];
-  for (uint8_t i = 0; i < ids.length(); i++) {
-    id_arr[i] = ids[i];
-  }
-  shellSortKnuth(id_arr, ids.length());
-  serial_print(id_arr, ids.length());
-
-  offCount[id] = 1;
-}
-
-// Print multiple OFF Readers unsorted
 // void printOFF(int id) {
 //   String ids = String(id);
-//   for (uint8_t i = 0; i < numReaders ; i++) {
-//     if(offCount[i] == 1) {
+//   for (uint8_t i = 0; i < numReaders; i++) {
+//     if (offCount[i] == 1) {
 //       ids += String(i);
 //     }
 //   }
-//   Serial.println("OFF_" + ids );
-//   // if(offCount[id] == 0) {
-//   //   Serial.println("OFF_" + String(id) );
-//   // }
+
+//   String id_arr[ids.length()];
+//   for (uint8_t i = 0; i < ids.length(); i++) {
+//     id_arr[i] = ids[i];
+//   }
+//   shellSortKnuth(id_arr, ids.length());
+//   serial_print(id_arr, ids.length());
+
 //   offCount[id] = 1;
 // }
+
+// Print multiple OFF Readers unsorted
+void printOFF(int id) {
+  String ids = String(id);
+  for (uint8_t i = 0; i < numReaders ; i++) {
+    if(offCount[i] == 1) {
+      ids += String(i);
+    }
+  }
+  Serial.println("OFF_" + ids );
+
+  offCount[id] = 1;
+}
 
 // print Single OFF Reader
 // void printOFF(int id) {

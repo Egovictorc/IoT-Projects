@@ -18,6 +18,7 @@ using ace_sorting::shellSortKnuth;
 #define SS_3_PIN 7
 #define SS_4_PIN 6
 
+
 // The number of RFID readers
 const byte numReaders = 4;
 //Each reader has a unique slave select pin
@@ -34,6 +35,7 @@ MFRC522 mfrc522[numReaders];
 String currentIDs[numReaders];
 int offCount[numReaders];
 
+String off_value = "";
 void setup() {
 // put your setup code here, to run once:
 #ifdef DEBUG
@@ -71,7 +73,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.println(F("------- END SETUP ------ "));
 }
-
+String current_value = "";
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -101,13 +103,19 @@ void loop() {
         changedValue = true;
         currentID = i;
         //Update the stored value for this sensor
-        //currentIDs[i] = readRFID;
+        currentIDs[i] = readRFID;
       } else {  // RFID Tag removed
         //currentIDs[i] = readRFID;
-        printOFF(i);
+        off_tags_when_removed(i);
+        current_value = ;
       }
-      currentIDs[i] = readRFID;
+    } else {
+      if (readRFID != "") {  // RFID Tag Changed
+      current_value = readRFID;
+      print_tag(readRFID);
+      }
     }
+    // currentIDs[i] = readRFID;
 
     //Halt PICC
     mfrc522[i].PICC_HaltA();
@@ -157,6 +165,11 @@ print RFID tag
 //   return id_str;
 // }
 
+void print_tag(String rfid) {
+  if(current_value != rfid) {
+    Serial.println(rfid);
+  }
+}
 // // qsort requires you to create a sort function
 // int sort_desc(const void *cmp1, const void *cmp2) {
 //   // Need to cast the void * to int *
@@ -168,45 +181,86 @@ print RFID tag
 //   //return b - a;
 // }
 
-// void serial_print(String ids[], int count) {
-//   String sorted_id_str = "";
-//   for (uint8_t i = 0; i < count; i++) {
-//     sorted_id_str += ids[i];
-//   }
-//   Serial.println("OFF_" + sorted_id_str);
-// }
 
-// print multiple OFF Readers sorted
-// void printOFF(int id) {
-//   String ids = String(id);
-//   for (uint8_t i = 0; i < numReaders; i++) {
-//     if (offCount[i] == 1) {
-//       ids += String(i);
-//     }
-//   }
 
-//   String id_arr[ids.length()];
-//   for (uint8_t i = 0; i < ids.length(); i++) {
-//     id_arr[i] = ids[i];
-//   }
-//   shellSortKnuth(id_arr, ids.length());
-//   serial_print(id_arr, ids.length());
+void print_on() {
+}
 
-//   offCount[id] = 1;
-// }
+void serial_print(String ids[], int count) {
+  String sorted_id_str = "";
+  for (uint8_t i = 0; i < count; i++) {
+    sorted_id_str += ids[i];
+  }
+  // Serial.println("OFF_" + sorted_id_str);
 
-// Print multiple OFF Readers unsorted
-void printOFF(int id) {
+  String tag_str = "";
+  for (uint8_t i = 0; i < count; i++) {
+    int _d = ids[i].toInt();
+    tag_str += "_" + currentIDs[_d];
+  }
+
+  if (!off_value.equals(tag_str)) {
+    Serial.println("OFF" + tag_str);
+    off_value = tag_str;
+  }
+  //Serial.println("OFF_" + tag_str);
+  //Serial.println("tag "+ sorted_id_str);
+}
+
+void on_tags_when_placed(String readRfid) {
+}
+
+void off_tags_when_placed(int id) {
   String ids = String(id);
-  for (uint8_t i = 0; i < numReaders ; i++) {
-    if(offCount[i] == 1) {
+  for (uint8_t i = 0; i < numReaders; i++) {
+    if (offCount[i] == 1 && id != i) {
       ids += String(i);
     }
   }
-  Serial.println("OFF_" + ids );
+
+
+  String id_arr[ids.length()];
+  for (uint8_t i = 0; i < ids.length(); i++) {
+    id_arr[i] = ids[i];
+  }
+  shellSortKnuth(id_arr, ids.length());
+  serial_print(id_arr, ids.length());
+  offCount[id] = 1;
+}
+
+// print multiple OFF Readers sorted
+void off_tags_when_removed(int id) {
+  String ids = String(id);
+  for (uint8_t i = 0; i < numReaders; i++) {
+    if (offCount[i] == 1 && id != i) {
+      ids += String(i);
+    }
+  }
+
+  String id_arr[ids.length()];
+  for (uint8_t i = 0; i < ids.length(); i++) {
+    id_arr[i] = ids[i];
+  }
+  shellSortKnuth(id_arr, ids.length());
+  serial_print(id_arr, ids.length());
 
   offCount[id] = 1;
 }
+
+// Print multiple OFF Readers unsorted
+// void printOFF(int id) {
+//   String ids = String(id);
+//   for (uint8_t i = 0; i < numReaders ; i++) {
+//     if(offCount[i] == 1) {
+//       ids += String(i);
+//     }
+//   }
+//   Serial.println("OFF_" + ids );
+//   // if(offCount[id] == 0) {
+//   //   Serial.println("OFF_" + String(id) );
+//   // }
+//   offCount[id] = 1;
+// }
 
 // print Single OFF Reader
 // void printOFF(int id) {

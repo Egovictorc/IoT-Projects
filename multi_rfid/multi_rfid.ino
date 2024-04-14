@@ -107,14 +107,8 @@ void loop() {
       } else {  // RFID Tag removed
         //currentIDs[i] = readRFID;
         off_tags_when_removed(i);
-        current_value = ;
       }
-    } else {
-      if (readRFID != "") {  // RFID Tag Changed
-      current_value = readRFID;
-      print_tag(readRFID);
-      }
-    }
+    } 
     // currentIDs[i] = readRFID;
 
     //Halt PICC

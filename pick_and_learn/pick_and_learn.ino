@@ -79,7 +79,7 @@ void loop() {
     if (mfrc522[i].PICC_IsNewCardPresent() && mfrc522[i].PICC_ReadCardSerial()) {
       // Extract the ID from the Tag
       readRFID = dump_byte_array(mfrc522[i].uid.uidByte, mfrc522[i].uid.size);
-      
+
     } else if (rfidStats[i] != 0) {  //tag removed
       // Serial.println("OFF_"+ String(i));
       off_tags_when_removed(i);
@@ -104,12 +104,12 @@ void loop() {
     // }
 
     //tag changed
-     if (readRFID != "" && rfidStats[i] == 0) {
-        // changedValue = true;
-        // print_placed_tag(readRFID);
-        status_when_placed(readRFID, i);
-        rfidStats[i] = 1;
-        currentIDs[i] = readRFID;
+    if (readRFID != "" && rfidStats[i] == 0) {
+      // changedValue = true;
+      // print_placed_tag(readRFID);
+      status_when_placed(readRFID, i);
+      rfidStats[i] = 1;
+      currentIDs[i] = readRFID;
     }
     // if (readRFID != currentIDs[i] && readRFID != "") {
     //     // changedValue = true;
@@ -131,41 +131,83 @@ void loop() {
 }
 
 
-void off_tags_when_removed(int id) {
-  String id_str = String(id);
+void status_when_placed(String rfid, int placedId) {
+  String off_arr[numReaders];
+  String on_arr[numReaders];
   for (int i = 0; i < numReaders; i++) {
-    if (i == id) {
+    if (i == placedId) {
+      on_arr[i] = rfid;
       continue;
     }
     if (rfidStats[i] == 0) {
-      id_str += String(i);
+      off_arr[i] = currentIDs[i];
+    } else {
+      on_arr[i] = currentIDs[i];
     }
   }
 
-  // Serial.println("OFF_" + id_str);
-  String id_arr[id_str.length()];
-  for (uint8_t i = 0; i < id_str.length(); i++) {
-    id_arr[i] = id_str[i];
-  }
-  shellSortKnuth(id_arr, id_str.length());
-  // print_arr(id_arr, id_str.length());
-  String sorted = "";
-  for (uint8_t i = 0; i < id_str.length(); i++) {
-     sorted += id_arr[i];
+  // sort the array of offs
+  shellSortKnuth(off_arr, numReaders);
+  shellSortKnuth(on_arr, numReaders);
+
+  String off_str = "";
+  String on_str = "";
+  for (uint8_t i = 0; i < numReaders; i++) {
+    // int val = id_arr[i].toInt();
+    if (off_arr[i] != "") {
+      off_str += +"_" + off_arr[i];
+    }
   }
 
-  // serial_print(id_arr, id_str.length());
-  String result = "";
-    for (uint8_t i = 0; i < id_str.length(); i++) {
-      int val = id_arr[i].toInt();
-     result += + "_"+ currentIDs[val];
+  for (uint8_t i = 0; i < numReaders; i++) {
+    // int val = id_arr[i].toInt();
+    if (on_arr[i] != "") {
+      on_str += +"_" + on_arr[i];
+    }
   }
-  Serial.println("OFF"+ result);
+  // Serial.println("OFF" + off_str);
+
+  if (off_str.length() == 0) {
+    Serial.println("ON" + on_str + "_NO_OFF");
+    return;
+  }
+  Serial.println("ON" + on_str + "_OFF" + off_str);
+}
+
+
+void off_tags_when_removed(int id) {
+  String id_str[numReaders];
+  for (int i = 0; i < numReaders; i++) {
+    if (i == id) {
+      id_str[i] = currentIDs[id];
+      continue;
+    }
+    if (rfidStats[i] == 0) {
+      id_str[i] = currentIDs[i];
+      ;
+    }
+  }
+
+  shellSortKnuth(id_str, numReaders);
+
+  String result = "";
+  for (uint8_t i = 0; i < numReaders; i++) {
+    // int val = id_arr[i].toInt();
+    if (id_str[i] != "") {
+      result += +"_" + id_str[i];
+    }
+  }
+  Serial.println("OFF" + result);
 
 
   // Serial.println("sorted ")
-  Serial.println("OFF_"+ sorted);
+  // Serial.println("OFF_"+ sorted);
 }
+
+
+
+
+
 
 
 
@@ -175,12 +217,12 @@ void off_tags_when_removed(int id) {
 //     if (i == id) {
 //       continue;
 //     }
-//     if (currentIDs[i] == "") {
+//     if (rfidStats[i] == 0) {
 //       id_str += String(i);
 //     }
 //   }
 
-//   Serial.println("OFF_" + id_str);
+//   // Serial.println("OFF_" + id_str);
 //   String id_arr[id_str.length()];
 //   for (uint8_t i = 0; i < id_str.length(); i++) {
 //     id_arr[i] = id_str[i];
@@ -192,42 +234,46 @@ void off_tags_when_removed(int id) {
 //      sorted += id_arr[i];
 //   }
 
-//   serial_print(sorted);
+//   // serial_print(id_arr, id_str.length());
+//   String result = "";
+//     for (uint8_t i = 0; i < id_str.length(); i++) {
+//       int val = id_arr[i].toInt();
+//      result += + "_"+ currentIDs[val];
+//   }
+//   Serial.println("OFF"+ result);
+
+
 //   // Serial.println("sorted ")
 //   Serial.println("OFF_"+ sorted);
 // }
 
-// void serial_print(String ids[], int count) {
-//     String result = "";
-//     for (uint8_t i = 0; i < count; i++) {
-//       int val = ids[i].toInt();
-//      result += + "_"+ currentIDs[val];
-//   }
-//   Serial.println("OFF"+ result);
-// }
+
+
+
+
 
 
 void print_placed_tag(String id) {
   Serial.println("Placed_" + id);
 }
 
-void status_when_placed(String rfid, int placedId) {
-  String off_str = "";
-  for (int i = 0; i < numReaders; i++) {
-    if (i == placedId) {
-      continue;
-    }
-    if (rfidStats[i] == 0) {
-      off_str += "_"+ currentIDs[i];
-    }
-  }
+// void status_when_placed(String rfid, int placedId) {
+//   String off_str = "";
+//   for (int i = 0; i < numReaders; i++) {
+//     if (i == placedId) {
+//       continue;
+//     }
+//     if (rfidStats[i] == 0) {
+//       off_str += "_"+ currentIDs[i];
+//     }
+//   }
 
-  if (off_str.length() == 0) {
-    Serial.println("ON_" + rfid + "_NO_OFF");
-    return;
-  }
-  Serial.println("ON_" + rfid + "_OFF_" + off_str);
-}
+//   if (off_str.length() == 0) {
+//     Serial.println("ON_" + rfid + "_NO_OFF");
+//     return;
+//   }
+//   Serial.println("ON_" + rfid + "_OFF_" + off_str);
+// }
 
 void print_arr(int arr[], int count) {
   String ids = "";

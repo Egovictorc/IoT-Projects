@@ -110,9 +110,10 @@ void loop() {
     if (readRFID != "" && rfidStats[i] == 0) {
       // changedValue = true;
       // print_placed_tag(readRFID);
-      status_when_placed(readRFID, i);
       rfidStats[i] = 1;
       currentIDs[i] = readRFID;
+      status_when_placed(readRFID, i);
+      
     }
     // if (readRFID != currentIDs[i] && readRFID != "") {
     //     // changedValue = true;
@@ -138,21 +139,20 @@ void status_when_placed(String rfid, int placedId) {
   String off_arr[numReaders];  //OFF TAGS
   String on_arr[numReaders];   //ON_TAGS
 
-  for (int i = 0; i < numReaders; i++) {
-    if (rfidStats[i] == 0) { //tag removed
-      continue;
+  for (int i = 0; i < numReaders; i++) {  //correctIDs = { "ABA29089", "A7E360C9", "130EB01A" };
+    bool isPresent = false;
+    if (rfid.equals(correctIDs[i])) {     //tag placed
+      isPresent = true;
+      //continue;
+    }
+    for (int j = 0; j < numReaders; j++) {
+      if (rfidStats[j] == 1 && currentIDs[j] == correctIDs[i]) {  //currentIDs
+        isPresent = true;
+      }
     }
 
-    for (int j = 0; j < numReaders; j++) { //correct IDs
-      if (rfid.equals(correctIDs[j])) {
-        continue;
-      }
-      if (currentIDs[i].equals(correctIDs[j])) {
-        
-        break;
-      } else {
-        off_arr[i] = correctIDs[j];
-      }
+    if (isPresent == false) {
+      off_arr[i] = correctIDs[i];
     }
   }
 
@@ -237,54 +237,6 @@ void off_tags_when_removed(int id) {
   // Serial.println("sorted ")
   // Serial.println("OFF_"+ sorted);
 }
-
-
-
-
-
-
-
-
-// void off_tags_when_removed(int id) {
-//   String id_str = String(id);
-//   for (int i = 0; i < numReaders; i++) {
-//     if (i == id) {
-//       continue;
-//     }
-//     if (rfidStats[i] == 0) {
-//       id_str += String(i);
-//     }
-//   }
-
-//   // Serial.println("OFF_" + id_str);
-//   String id_arr[id_str.length()];
-//   for (uint8_t i = 0; i < id_str.length(); i++) {
-//     id_arr[i] = id_str[i];
-//   }
-//   shellSortKnuth(id_arr, id_str.length());
-//   // print_arr(id_arr, id_str.length());
-//   String sorted = "";
-//   for (uint8_t i = 0; i < id_str.length(); i++) {
-//      sorted += id_arr[i];
-//   }
-
-//   // serial_print(id_arr, id_str.length());
-//   String result = "";
-//     for (uint8_t i = 0; i < id_str.length(); i++) {
-//       int val = id_arr[i].toInt();
-//      result += + "_"+ currentIDs[val];
-//   }
-//   Serial.println("OFF"+ result);
-
-
-//   // Serial.println("sorted ")
-//   Serial.println("OFF_"+ sorted);
-// }
-
-
-
-
-
 
 
 void print_placed_tag(String id) {

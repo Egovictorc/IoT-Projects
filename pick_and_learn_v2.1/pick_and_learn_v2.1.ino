@@ -26,7 +26,7 @@ const byte resetPin = RST_PIN;
 MFRC522 mfrc522[numReaders];
 
 // The sequence of NFC tag IDs required to solve the puzzle
-const String correctIDs[] = { "83FFBD9F", "7398CD0C", "034ADA0C" };
+const String correctIDs[] = { "ABA29089", "A7E360C9", "130EB01A" };
 //The tag IDs currently detected by each reader
 String currentIDs[numReaders];
 int rfidStats[numReaders];
@@ -155,28 +155,6 @@ void status_when_placed(String rfid, int placedId) {
     }
   }
 
-  // for (int i = 0; i < numReaders; i++) {
-  //   if (rfid == correctIDs[i]) {
-  //     // on_arr[i] = rfid;
-  //     continue;
-  //   }
-
-  //   for (int j = 0; j < numReaders; j++) {
-  //     if (correctIDs[j].equals(rfid)) {
-  //       continue;
-  //     }
-  //     //check correct IDs
-  //     if (rfidStats[i] == 0 && !correctIDs[j].equals(currentIDs[i])) {
-  //       off_arr[i] = correctIDs[j];
-  //     }
-  //   }
-
-  // if (rfidStats[i] == 0 && !currentIDs[i].equals(rfid)) {
-  //   off_arr[i] = currentIDs[i]; //ADD TO OFF_TAGS
-  // } else {
-  //   on_arr[i] = currentIDs[i];
-  // }
-  // }
 
   // sort the array of offs
   shellSortKnuth(off_arr, numReaders);  //sort OFF TAGS
@@ -210,29 +188,33 @@ void status_when_placed(String rfid, int placedId) {
 
 
 void off_tags_when_removed(int id) {
-  String id_str[numReaders];
+  String off_arr[numReaders];
+  String on_arr[numReaders];
   for (int i = 0; i < numReaders; i++) {
    bool isPresent = false;
-   for(int j = 0; j < numReaders; j++) {
-    if(id == j) {
-      continue;
-    }
-    if(currentIDs[j].equals(correctIDs[i])) {
-      isPresent = true;
-    }
+   if(currentIDs[id].equals(correctIDs[i])) {
+    isPresent = false;
    }
+
+ for (int j = 0; j < numReaders; j++) {
+
+       if (rfidStats[j] == 1 && currentIDs[j] == correctIDs[i]) {  //currentIDs
+        isPresent = true;
+      }
+    }
+  
    if(isPresent == false ) {
-    id_str[i] = correctIDs[i];
+    off_arr[i] = correctIDs[i];
    }
   }
 
-  shellSortKnuth(id_str, numReaders);
+  shellSortKnuth(off_arr, numReaders);
 
   String result = "";
   for (uint8_t i = 0; i < numReaders; i++) {
     // int val = id_arr[i].toInt();
-    if (id_str[i] != "") {
-      result += +"_" + id_str[i];
+    if (off_arr[i] != "") {
+      result += +"_" + off_arr[i];
     }
   }
   Serial.println("OFF" + result);

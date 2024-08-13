@@ -208,7 +208,6 @@ void status_when_placed(String rfid, int placedId) {
 }
 
 
-
 void off_tags_when_removed(int id) {
   String id_str[numReaders];
   for (int i = 0; i < numReaders; i++) {
@@ -242,11 +241,6 @@ void off_tags_when_removed(int id) {
   // Serial.println("OFF_"+ sorted);
 }
 
-
-
-void print_placed_tag(String id) {
-  Serial.println("Placed_" + id);
-}
 
 // void status_when_placed(String rfid, int placedId) {
 //   String off_str = "";

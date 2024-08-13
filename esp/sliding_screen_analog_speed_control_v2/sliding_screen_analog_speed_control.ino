@@ -15,7 +15,6 @@ NetworkServer server(80);
 
 int mode = 1;
 double pos = 0.000000;
-double factor = 0.00001;
 void setup() {
   // put your setup code here, to run once:
   // declare pins as output
@@ -169,42 +168,120 @@ void loop() {
 void moveRight(double distance, int speed) {
   //set the spinning direction clockwise
   digitalWrite(dirPin, HIGH);
-  Serial.println("-------------- Count up -------------------");
-  pos = 0;
-
-  do {
-    //   Send count up to serial
-    //Serial.println(pos);
-    move(distance, speed);
-    pos = pos + factor;
-  } while (pos < distance);
+  move(distance, speed, "R");
 }
 
 void moveLeft(double distance, int speed) {
   //set the spinning direction clockwise
   digitalWrite(dirPin, LOW);
-  //Send count down to serial
-  Serial.println("-------------- Count down -------------------");
-
-  pos = distance;
-  do {
-    //Serial.println(pos);
-    // control motor movement
-    move(distance, speed);
-    pos = pos - factor;
-
-  } while (pos >= 0);
+  move(distance, speed, "L");
 }
 
-void move(double distance, int speed) {
-  // control motor movement
-  //these four lines result in 1 step
-  Serial.println(pos, 6); //send pos to ventuz / output program
-  analogWrite(stepPin, 51 * speed);  //max value = 255, min value = 0
-  delayMicroseconds(60);                        //delay in milliseconds
-  analogWrite(stepPin, 0);
-  delayMicroseconds(30);
+void move(double distance, int speed, String direction) {
+
+  // count down
+  if (direction == "L") {
+    Serial.println("-------------- Count down -------------------");
+    pos = distance;
+    do {
+      /*
+      Send count down to serial
+      */
+      Serial.println(pos);
+
+      // control motor movement
+      analogWrite(stepPin, 51 * speed);  //max value = 255, min value = 0
+      delay(100);                         //delay in milliseconds
+      analogWrite(stepPin, 0);
+      delayMicroseconds(30);
+      pos = pos - 0.01;
+
+    } while (pos > 0);
+  } else {
+    // count up
+    Serial.println("-------------- Count up -------------------");
+    pos = 0;
+
+    do {
+      /*
+      Send count up to serial
+      */
+      Serial.println(pos);
+      pos = pos + 0.01;
+
+      // control motor movement
+      //these four lines result in 1 step
+      Serial.println(pos);
+      analogWrite(stepPin, 51 * speed);  //max value = 255, min value = 0
+      delay(100);                         //delay in milliseconds
+      analogWrite(stepPin, 0);
+      delayMicroseconds(30);
+    } while (pos < distance);
+    
+  }
+
+
+  // count up
+  // for (pos = 0; pos < distance; pos++) {
+  //   //these four lines result in 1 step
+  //   Serial.println(pos);
+  //   analogWrite(stepPin, 51 * speed);  //max value = 255, min value = 0
+  //   delayMicroseconds(30);
+  //   analogWrite(stepPin, 0);
+  //   delayMicroseconds(30);
+  // }
+
+  // for (pos = 0; pos < stepsPerRevolution * distance; pos++) {
+  //   //these four lines result in 1 step
+  //   analogWrite(stepPin, 51 * speed); //max value = 255, min value = 0
+  //   delayMicroseconds(30 );
+  //   analogWrite(stepPin, 0);
+  //   delayMicroseconds(30);
+  // }
 }
+
+
+// void move(double distance, int speed) {
+// // count up
+//     //these four lines result in 1 step
+
+//   for (pos = 0; pos < stepsPerRevolution * distance; pos++) {
+//     //these four lines result in 1 step
+//     analogWrite(stepPin, 51 * speed); //max value = 255, min value = 0
+//     delayMicroseconds(30 );
+//     analogWrite(stepPin, 0);
+//     delayMicroseconds(30);
+//   }
+// }
+
+/*
+void moveRight(double distance) {
+  //set the spinning direction clockwise
+  digitalWrite(dirPin, HIGH);
+  for (pos = 0; pos < stepsPerRevolution * distance; pos++) {
+    //these four lines result in 1 step
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(30);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(30);
+  }
+}
+*/
+/*
+void moveLeft(double distance, int speed) {
+  //set the spinning direction clockwise
+  digitalWrite(dirPin, LOW);
+  for (pos = 0; pos < stepsPerRevolution * distance; pos++) {
+    //these four lines result in 1 step
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(30);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(30);
+  }
+}
+*/
+
+
 
 void stop() {
   digitalWrite(stepPin, LOW);

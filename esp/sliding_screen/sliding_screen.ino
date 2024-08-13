@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
-const char *ssid = "Ms";
-const char *password = "@12345678#";
+const char *ssid = "KVRENO";
+const char *password = "000111000";
 
 NetworkServer server(80);
 
@@ -26,6 +26,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("--------- Serial communicatiton started on 115200 ------------------ ");
   pinMode(5, OUTPUT);  // set the LED pin mode
+
 
   delay(10);
   Serial.println("------------- Connecting to Provisioned WIFI ------------------ ");
@@ -186,6 +187,8 @@ void move(double distance, int speed) {
     delayMicroseconds(300 / speed);
   }
 }
+
+
 /*
 void moveRight(double distance) {
   //set the spinning direction clockwise

@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "KVRENO";
-const char* password = "000111000";
+const char *ssid = "KVRENO";
+const char *password = "000111000";
 // const char *ssid = "Ms";
 // const char *password = "@12345678#";
 
@@ -19,8 +19,6 @@ int mode = 1;
 double pos = 0.000000;
 double factor = 0.000251;
 // double factor = 0.000601;
-
-boolean isCalibrated = false;
 
 void setup() {
   // put your setup code here, to run once:
@@ -60,6 +58,7 @@ void setup() {
 
 
 void loop() {
+
   NetworkClient client = server.accept();  // listen for incoming clients
 
   if (client) {
@@ -107,48 +106,9 @@ void loop() {
           currentLine += c;      // add it to the end of the currentLine
         }
 
-        if (currentLine.startsWith("GET ") && currentLine.endsWith("/L")) {
-          double* _movementRange = getMovementRange(currentLine);
-          double startPosition = _movementRange[0];
-          double endPosition = _movementRange[1];
-          int speed = getSpeed(currentLine);
-          setFactor(speed);
-
-          Serial.println("");
-          Serial.println(currentLine);
-          Serial.println("");
-
-          Serial.print("start Position ");
-          Serial.print(startPosition);
-          Serial.println("");
-          Serial.println(" end position ");
-          Serial.print(endPosition);
-
-          if (startPosition < endPosition) {
-            // move forward
-            for (pos = startPosition; pos <= endPosition; pos = pos + factor) {
-              move(speed);
-              //Serial.println(pos, 6);
-            }
-
-            // do {
-            //   //   Send count up to serial
-            //   //Serial.println(pos);
-            //   move(speed);
-            //   pos = pos + factor;
-            // } while (startPosition < endPosition);
-          } else {
-            // move backward
-            for (pos = startPosition; pos >= endPosition; pos = pos - factor) {
-              move(speed);
-              // Serial.println(i, 6);
-            }
-          }
-        }
         // Check to see if the client request was "GET /L" or "GET /R":
         //if (currentLine.endsWith("GET /L")) {
-        /*
-                if (currentLine.startsWith("GET ") && currentLine.endsWith("/L")) {
+        if (currentLine.startsWith("GET ") && currentLine.endsWith("/L")) {
           double distance = getDistance(currentLine);
           int speed = getSpeed(currentLine);
           digitalWrite(5, HIGH);  // GET /H turns the LED on
@@ -166,7 +126,6 @@ void loop() {
           digitalWrite(5, LOW);  // GET /L turns the LED off
           stop();
         }
-          */
       }
     }
     // close the connection:
@@ -221,7 +180,7 @@ void moveRight(double distance, int speed) {
   do {
     //   Send count up to serial
     //Serial.println(pos);
-    move(speed);
+    move(distance, speed);
     pos = pos + factor;
   } while (pos < distance);
 
@@ -240,7 +199,7 @@ void moveLeft(double distance, int speed) {
   do {
     //Serial.println(pos);
     // control motor movement
-    move(speed);
+    move(distance, speed);
     pos = pos - factor;
 
   } while (pos >= 0);
@@ -250,12 +209,9 @@ void moveLeft(double distance, int speed) {
 
 void setFactor(int speed) {
   factor = speed * factor;
-  Serial.println(" factor ");
-  Serial.println(factor, 6);
-  Serial.println(" ");
 }
 
-void move(int speed) {
+void move(double distance, int speed) {
   // control motor movement
   //these four lines result in 1 step
   Serial.println(pos, 6);            //send pos to serial monitor / output program
@@ -270,30 +226,25 @@ void stop() {
 }
 
 
-double* getMovementRange(String line) {
-  // Dynamically allocate memory for an array of doubles
-  double* arr = new double[2];
+double[] getRange(String line) {
   //Serial.println("");
   //Serial.print("distance: ");
   //String distance = line.substring(5, line.length() - 2);
-  int separatorIndex = line.indexOf(':');
+  String distance = line.substring(5, line.length() - 4);
+  int separatorIndex = line.lastIndexOf(':');
   String startPos = line.substring(5, separatorIndex);
   String endPos = line.substring(separatorIndex + 1, line.length() - 4);
-
-  Serial.println("start pos: ");
-  Serial.print(startPos);
+  Serial.print("start pos: ");
+  Serial.println(startPos);
   Serial.println("");
 
-  Serial.println("end pos: ");
-  Serial.print(endPos);
+  Serial.print("end pos: ");
+  Serial.println(endPos);
   Serial.println("");
   //Serial.print(distance);
   //Serial.println("");
 
-  arr[0] = startPos.toDouble();
-  arr[1] = endPos.toDouble();
-
-  return arr;
+  return [startPos, endPos];
 }
 
 double getDistance(String line) {
@@ -322,9 +273,8 @@ int getSpeed(String line) {
   //Serial.println("");
   //Serial.print("speed: ");
   String speed = line.substring(line.length() - 3, line.length() - 2);
-  Serial.println("speed ");
-  Serial.println(speed);
-  Serial.println(" ");
+  //Serial.print(speed);
+  //Serial.println("");
 
   return speed.toInt();
 }

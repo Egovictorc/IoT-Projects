@@ -1,5 +1,6 @@
 //README:
 //RFID Tags are not registered here. Check v2 for registering rfids in the code
+//last updated: 15/08/2024
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -14,10 +15,10 @@ using ace_sorting::shellSortKnuth;
 #define SS_3_PIN 7
 #define SS_4_PIN 6
 // The number of RFID readers
-const byte numReaders = 4;
+const byte numReaders = 3;
 //Each reader has a unique slave select pin
- const byte ssPins[] = { SS_1_PIN, SS_2_PIN, SS_3_PIN, SS_4_PIN };
-//const byte ssPins[] = { SS_1_PIN, SS_2_PIN, SS_4_PIN };
+ //const byte ssPins[] = { SS_1_PIN, SS_2_PIN, SS_3_PIN, SS_4_PIN };
+const byte ssPins[] = { SS_1_PIN, SS_2_PIN, SS_4_PIN };
 
 
 // They will share the same reset pin
@@ -26,7 +27,8 @@ const byte resetPin = RST_PIN;
 MFRC522 mfrc522[numReaders];
 
 // The sequence of NFC tag IDs required to solve the puzzle
-const String correctIDs[] = { "1D2DDD62031080", "1D2EDD62031080", "1D30DD62031080","1D2FDD62031080" }; //E85BED2A 60D1 40853 02 
+const String correctIDs[] = { "1D42DD62031080", "1D41DD62031080", "1D40DD62031080"}; //E85BED2A 60D1 40853 02 
+//const String correctIDs[] = { "1D2DDD62031080", "1D2EDD62031080", "1D30DD62031080","1D2FDD62031080" }; //E85BED2A 60D1 40853 02 
 //const String correctIDs[] = { "60D1141B", "4084651B", "E85BED2A","71C37927" }; //E85BED2A 60D1 408
 //The tag IDs currently detected by each reader
 String currentIDs[numReaders];

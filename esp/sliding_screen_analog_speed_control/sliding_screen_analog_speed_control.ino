@@ -7,7 +7,7 @@ const char* password = "000111000";
 // const char *ssid = "Ms";
 // const char *password = "@12345678#";
 
-NetworkServer server(80);
+NetworkServer server(80);  //start a server on port 80
 
 
 #define stepPin 16  //Pull -ve

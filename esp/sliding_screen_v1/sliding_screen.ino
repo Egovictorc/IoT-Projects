@@ -2,38 +2,35 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "KVRENO";
-const char* password = "000111000";
-// const char* ssid = "Ms";
-// const char* password = "@12345678#";
+// const char* ssid = "KVRENO";
+// const char* password = "000111000";
+const char* ssid = "Ms";
+const char* password = "@12345678#";
 
 NetworkServer server(80);  //start a server on port 80
 
 
 #define stepPin 16  //Pull -ve
 #define dirPin 17   //DIR -ve
-#define limiterPin 5
-#define limiterPin_2 4
+#define ledPin 5
 #define stepsPerRevolution 10000
 
 int mode = 1;
+double currentPosition = 0.000000;
 double factor = 0.000251;
 // double factor = 0.000601;
-double initialPosition = 0.000000;
-double destination = 0.000000;
+double startPosition = 0.000000;
+double endPosition = 0.000000;
 int speed = 1;
 boolean isInitialized = false;
-
+boolean isFirstTime = true;
 
 void setup() {
   // put your setup code here, to run once:
   // declare pins as output
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
-
-  //limiterPin pins
-  pinMode(limiterPin, OUTPUT);    // limiterPin mode
-  pinMode(limiterPin_2, OUTPUT);  // limiterPin mode
+  pinMode(ledPin, INPUT);  // ledPin mode
 
   //initialize serial communication
   Serial.begin(115200);
@@ -69,6 +66,7 @@ void setup() {
 
 void loop() {
   NetworkClient client = server.accept();  // listen for incoming clients
+
 
   if (client) {
     Serial.println("New Client Connected");
@@ -110,16 +108,25 @@ void loop() {
           if (separatorIndex != -1) {
             String paramName = param.substring(0, separatorIndex);
             String paramValue = param.substring(separatorIndex + 1);
-            // Serial.println("Param: " + paramName + " = " + paramValue);
+            Serial.println("Param: " + paramName + " = " + paramValue);
 
             // set values
 
-            if (paramName == "destination") {
-              destination = paramValue.toDouble();
+            if (paramName == "startPosition") {
+              if(isFirstTime) {
+                // do nothing, use 0.000000 as the start point
+                isFirstTime = false;
+              } else {
+                startPosition = paramValue.toDouble();
+              }
+            } else if (paramName == "endPosition") {
+              endPosition = paramValue.toDouble();
             } else if (paramName == "speed") {
               speed = paramValue.toInt();
               setFactor(speed);
             }
+
+
 
             // Add to JSON response
             jsonResponse += "\"" + paramName + "\": \"" + paramValue + "\",";
@@ -150,74 +157,73 @@ void loop() {
 }
 
 
+// void moveRight(double distance, int speed) {
+//   //set the spinning direction clockwise
+//   digitalWrite(dirPin, HIGH);
+//   Serial.println("-------------- Count up -------------------");
+//   currentPosition = 0;
+//   setFactor(speed);
+//   long time = millis();
+//   do {
+//     //   Send count up to serial
+//     //Serial.println(currentPosition);
+//     move();
+//     currentPosition = currentPosition + factor;
+//   } while (currentPosition < distance);
+
+//   // stop motor movement
+//   analogWrite(stepPin, 0);
+//   Serial.println(millis() - time);
+// }
+
+// void moveLeft(double distance, int speed) {
+//   //set the spinning direction clockwise
+//   digitalWrite(dirPin, LOW);
+//   //Send count down to serial
+//   Serial.println("-------------- Count down -------------------");
+//   setFactor(speed);
+//   currentPosition = distance;
+//   do {
+//     //Serial.println(currentPosition);
+//     // control motor movement
+//     move();
+//     currentPosition = currentPosition - factor;
+
+//   } while (currentPosition >= 0);
+//   // stop motor movement
+//   analogWrite(stepPin, 0);
+// }
+
 void setFactor(int speed) {
   factor = speed * factor;
-  // Serial.println(" factor ");
-  // Serial.println(factor, 6);
-  // Serial.println(" ");
+  Serial.println(" factor ");
+  Serial.println(factor, 6);
+  Serial.println(" ");
 }
 
 void move() {
   // control motor movement
   //these four lines result in 1 step
-  //max value = 255, max speed = 5 min value = 0
 
+  analogWrite(stepPin, 51 * speed);  //max value = 255, max speed = 5 min value = 0
   // delayMicroseconds(60 );                        //delay in milliseconds
   // analogWrite(stepPin, 0);
   // delayMicroseconds(30);
 
-  boolean isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
-
-  // Serial.println(digitalRead(limiterPin));
-  if (initialPosition < destination) {
-    //set motor spinning direction clockwise
-    digitalWrite(dirPin, LOW);
-    // start motor movement
-    // analogWrite(stepPin, 51 * speed);
-    digitalWrite(stepPin, HIGH);
-
-    while (initialPosition <= destination && !isLimiting) {
-      Serial.println(initialPosition, 6);  //send position to serial monitor / output program
-      initialPosition = initialPosition + factor;
-      isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+  if (startPosition < endPosition) {
+    // move forward
+    for (currentPosition = startPosition; currentPosition <= endPosition; currentPosition += factor) {
+      Serial.println(currentPosition, 6);  //send position to serial monitor / output program
     }
   } else {
-    //set motor spinning direction anti clockwise
-    digitalWrite(dirPin, HIGH);
-    // start motor movement
-    // analogWrite(stepPin, 51 * speed);
-    digitalWrite(stepPin, HIGH);
     // move backward
-    while (initialPosition >= destination && !isLimiting) {
-      Serial.println(initialPosition, 6);  //send position to serial monitor / output program
-      initialPosition = initialPosition - factor;
-      isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+    for (currentPosition = startPosition; currentPosition >= endPosition; currentPosition -= factor) {
+      Serial.println(currentPosition, 6);  //send position to serial monitor / output program
     }
   }
-
-  /*
-  Serial.print("\nDestination ");
-  Serial.print(destination);
-
-  Serial.print("\ninitialPosition ");
-  Serial.print(initialPosition);
-  */
 }
 
 
-void resetMotorPosition() {
-  Serial.print("Initializing ");
-  digitalWrite(limiterPin, LOW);
-  // check if motor has moved to start position: 0
-  while (digitalRead(limiterPin) != 1) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println("\nInititalized");
-}
-
-
-/*
 void resetMotorPosition() {
   isInitialized = false;
   Serial.print("Initializing ");
@@ -225,13 +231,13 @@ void resetMotorPosition() {
   while (!isInitialized) {
     Serial.print(".");
     delay(500);
-    if (digitalRead(limiterPin) == HIGH) {
+    if (digitalRead(ledPin) == HIGH) {
       isInitialized = true;
     }
   }
   Serial.println("\nInititalized");
 }
-*/
+
 
 void stop() {
   digitalWrite(stepPin, LOW);

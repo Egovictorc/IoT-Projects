@@ -10,11 +10,11 @@ const char* password = "000111000";
 NetworkServer server(80);  //start a server on port 80
 
 
-#define stepPin 16  //Pull -ve
-#define dirPin 17   //DIR -ve
+#define stepPin 14  //Pull -ve
+#define dirPin 13   //DIR -ve
 #define limiterPin 5
 #define limiterPin_2 4
-#define stepsPerRevolution 10000
+#define stepsPerRevolution 200
 
 int mode = 1;
 double factor = 0.000251;
@@ -63,6 +63,7 @@ void setup() {
   //Serial.println("--------- Initialization Completed ------------------ ");
   // Start initialization
 
+
   resetMotorPosition();
 }
 
@@ -90,7 +91,7 @@ void loop() {
       if (paramsStart != -1) {
         // Extract the query string
         String queryString = request.substring(paramsStart + 1, request.indexOf(' ', paramsStart));
-        Serial.println("Query string: " + queryString);
+        // Serial.println("Query string: " + queryString);
 
         // Parse the query parameters (split by '&' and '=')
         String param;
@@ -170,31 +171,27 @@ void move() {
 
   // Serial.println(digitalRead(limiterPin));
   if (initialPosition < destination) {
-    //set motor spinning direction clockwise
-    digitalWrite(dirPin, LOW);
-    // start motor movement
-    // analogWrite(stepPin, 51 * speed);
-    digitalWrite(stepPin, HIGH);
 
+    digitalWrite(dirPin, LOW);
     while (initialPosition <= destination && !isLimiting) {
+      makeOneRevolution();
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition + factor;
       isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
     }
   } else {
-    //set motor spinning direction anti clockwise
     digitalWrite(dirPin, HIGH);
-    // start motor movement
-    // analogWrite(stepPin, 51 * speed);
-    digitalWrite(stepPin, HIGH);
-    // move backward
     while (initialPosition >= destination && !isLimiting) {
+      //rotate left
+      makeOneRevolution();
+      // move backward
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition - factor;
       isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
     }
   }
-
+  // Stop motor rotation
+  stopMotorRotation();
   /*
   Serial.print("\nDestination ");
   Serial.print(destination);
@@ -208,13 +205,67 @@ void move() {
 void resetMotorPosition() {
   Serial.print("Initializing ");
   digitalWrite(limiterPin, LOW);
+
+  //rotate left
+  digitalWrite(dirPin, HIGH);
   // check if motor has moved to start position: 0
   while (digitalRead(limiterPin) != 1) {
+    // start motor anti clokwise rotation
+    makeOneRevolution();
     Serial.print(".");
-    delay(500);
+    //delay(500);
   }
-  Serial.println("\nInititalized");
+  Serial.println("");
+  Serial.println("Inititalized");
+  // Serial.println("\nInititalized");
+  stopMotorRotation();
 }
+
+
+void makeOneRevolution() {
+    for (int i = 0; i < stepsPerRevolution; i++) {
+    digitalWrite(stepPin, HIGH);
+    //delay(10000);
+    delayMicroseconds(30);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(20);
+    //delay(10000);
+  }
+}
+// void leftRotateMotor() {
+//   //set motor spinning direction anti clockwise
+//   //digitalWrite(dirPin, HIGH);
+//   // start motor movement
+//   // analogWrite(stepPin, 51 * speed);
+//   //digitalWrite(stepPin, HIGH);
+
+//   for (int i = 0; i < stepsPerRevolution; i++) {
+//     digitalWrite(stepPin, HIGH);
+//     //delay(10000);
+//     delayMicroseconds(30);
+//     digitalWrite(stepPin, LOW);
+//     delayMicroseconds(30);
+//     //delay(10000);
+//   }
+// }
+
+
+// void rightRotateMotor() {
+//   //set motor spinning direction clockwise
+//   //digitalWrite(dirPin, LOW);
+//   // start motor movement
+//   // analogWrite(stepPin, 51 * speed);
+//   //digitalWrite(stepPin, HIGH);
+
+//    for (int i = 0; i < stepsPerRevolution; i++) {
+//     //delay(10000);
+//     digitalWrite(stepPin, HIGH);
+//     delayMicroseconds(30);
+//     digitalWrite(stepPin, LOW);
+//     delayMicroseconds(30);
+//     //delay(10000);
+//   }
+// }
 
 
 /*
@@ -233,6 +284,6 @@ void resetMotorPosition() {
 }
 */
 
-void stop() {
+void stopMotorRotation() {
   digitalWrite(stepPin, LOW);
 }

@@ -1,5 +1,7 @@
-#define dirPin 2
-#define stepPin 3
+#define dirPin 13
+#define stepPin 14
+// #define dirPin 2
+// #define stepPin 3
 #define stepsPerRevolution 1000
 int Mode = 0;
 

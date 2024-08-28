@@ -9,12 +9,24 @@ const char* password = "@12345678#";
 
 NetworkServer server(80);  //start a server on port 80
 
+#include <AccelStepper.h>
+
+// Define motor interface type
+#define MotorInterfaceType 1  // 1 means Driver type (DIR, STEP)
+
+// Define motor connections and motor interface type
+#define stepPin 14  // STEP pin
+#define dirPin 13   // DIR pin
+
+// Create an instance of AccelStepper
+AccelStepper stepper(MotorInterfaceType, stepPin, dirPin);
 
 #define stepPin 14  //Pull -ve
 #define dirPin 13   //DIR -ve
 #define limiterPin 5
 #define limiterPin_2 4
 #define stepsPerRevolution 1000
+int pulse_delay = 1000;
 
 int mode = 1;
 double factor = 0.000251;
@@ -63,7 +75,12 @@ void setup() {
   //Serial.println("--------- Initialization Completed ------------------ ");
   // Start initialization
 
+  // Set a reasonable maximum speed and smoother acceleration
+  stepper.setMaxSpeed(2000);       // Lower maximum speed for smoothness
+  stepper.setAcceleration(1000);   // Moderate acceleration for smoother ramp-up
 
+    // Set the initial target position (number of steps to move)
+  // stepper.moveTo(2000);  // Move 2000 steps forward
   resetMotorPosition();
 }
 
@@ -171,19 +188,19 @@ void move() {
 
   // Serial.println(digitalRead(limiterPin));
   if (initialPosition < destination) {
-
-    digitalWrite(dirPin, LOW);
+    // digitalWrite(dirPin, LOW);
+    // delayMicroseconds(pulse_delay);
     while (initialPosition <= destination && !isLimiting) {
-      makeOneRevolution();
+      makeOneRevolution(1);
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition + factor;
       isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
     }
   } else {
-    digitalWrite(dirPin, HIGH);
+    // digitalWrite(dirPin, HIGH);
     while (initialPosition >= destination && !isLimiting) {
       //rotate left
-      makeOneRevolution();
+      makeOneRevolution(0);
       // move backward
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition - factor;
@@ -204,14 +221,14 @@ void move() {
 
 void resetMotorPosition() {
   Serial.print("Initializing ");
-  digitalWrite(limiterPin, LOW);
+  // digitalWrite(limiterPin, LOW);
 
   //rotate left
-  digitalWrite(dirPin, HIGH);
+  // digitalWrite(dirPin, HIGH);
   // check if motor has moved to start position: 0
   while (digitalRead(limiterPin) != 1) {
     // start motor anti clokwise rotation
-    makeOneRevolution();
+    makeOneRevolution(0);
     Serial.print(".");
     //delay(500);
   }
@@ -222,16 +239,40 @@ void resetMotorPosition() {
 }
 
 
+void makeOneRevolution(int direction) {
+  if (direction == 0) {
+    stepper.moveTo(stepper.currentPosition() - 5000);  // Increment the target position
+  } else {
+    stepper.moveTo(stepper.currentPosition() + 5000);  // Increment the target position
+  }
+  stepper.run();  // Move the motor towards the target position
+}
+
+
+/*
 void makeOneRevolution() {
-    for (int i = 0; i < stepsPerRevolution; i++) {
+  for(int i = 0; i < pulse_delay; i++) {
     digitalWrite(stepPin, HIGH);
     //delay(10000);
-    delayMicroseconds(30);
+    delayMicroseconds(pulse_delay);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(20);
+    // delayMicroseconds(pulse_delay);
+    delayMicroseconds(pulse_delay);
     //delay(10000);
   }
 }
+*/
+
+
+
+// void makeOneRevolution() {
+//     digitalWrite(stepPin, HIGH);
+//     //delay(10000);
+//     delayMicroseconds(pulse_delay);
+//     digitalWrite(stepPin, LOW);
+//     delayMicroseconds(pulse_delay);
+//     //delay(10000);
+// }
 // void leftRotateMotor() {
 //   //set motor spinning direction anti clockwise
 //   //digitalWrite(dirPin, HIGH);
@@ -285,5 +326,6 @@ void resetMotorPosition() {
 */
 
 void stopMotorRotation() {
-  digitalWrite(stepPin, LOW);
+  //digitalWrite(stepPin, LOW);
+  stepper.stop();
 }

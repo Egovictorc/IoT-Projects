@@ -14,6 +14,13 @@
 // Define a stepper and the pins it will use
 AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
 
+#define stepPin 14  //Pull -ve
+#define dirPin 13   //DIR -ve
+
+// Define a stepper and the pins it will use
+//AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+AccelStepper stepper(1, stepPin, dirPin); // Defaults step, dir to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+
 void setup()
 {  
   stepper.setMaxSpeed(150);

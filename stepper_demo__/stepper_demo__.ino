@@ -16,11 +16,11 @@ void setup() {
   Serial.println("Serial initialized");
 
   // Configure motor speed and acceleration
-  stepper.setMaxSpeed(1000);     // Set maximum speed (steps per second)
-  stepper.setAcceleration(200); // Set acceleration (steps per second squared)
+  stepper.setMaxSpeed(2000);     // Set maximum speed (steps per second)
+  stepper.setAcceleration(1000); // Set acceleration (steps per second squared)
   stepper.setSpeed(1000); 
   // Set initial target position
-  stepper.moveTo(1600);         // Move to 1600 steps (e.g., 2 revolutions if 800 steps per revolution)
+  // stepper.moveTo(1600);         // Move to 1600 steps (e.g., 2 revolutions if 800 steps per revolution)
 
 
 }
@@ -30,4 +30,5 @@ void loop() {
     stepper.moveTo(stepper.currentPosition() + 2000); // Change direction by moving back to the start position
   }
   stepper.run(); // Run the motor to the target position
+  delayMicroseconds(2000);
 }

@@ -35,7 +35,7 @@ double initialPosition = 0.000000;
 double destination = 0.000000;
 int speed = 1;
 boolean isInitialized = false;
-int stepperDelay = 3000;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -76,10 +76,10 @@ void setup() {
   // Start initialization
 
   // Set a reasonable maximum speed and smoother acceleration
-  // stepper.setMaxSpeed(2000);       // Lower maximum speed for smoothness
-  // stepper.setAcceleration(1000);   // Moderate acceleration for smoother ramp-up
+  stepper.setMaxSpeed(2000);       // Lower maximum speed for smoothness
+  stepper.setAcceleration(1000);   // Moderate acceleration for smoother ramp-up
 
-  // Set the initial target position (number of steps to move)
+    // Set the initial target position (number of steps to move)
   // stepper.moveTo(2000);  // Move 2000 steps forward
   resetMotorPosition();
 }
@@ -228,8 +228,7 @@ void resetMotorPosition() {
   // check if motor has moved to start position: 0
   while (digitalRead(limiterPin) != 1) {
     // start motor anti clokwise rotation
-    // makeOneRevolution(0);
-    moveBackward();
+    makeOneRevolution(0);
     Serial.print(".");
     //delay(500);
   }
@@ -242,44 +241,11 @@ void resetMotorPosition() {
 
 void makeOneRevolution(int direction) {
   if (direction == 0) {
-    //stepper.moveTo(stepper.currentPosition() - 5000);  // Increment the target position
-    // moveForward();
-    moveBackward();
+    stepper.moveTo(stepper.currentPosition() - 5000);  // Increment the target position
   } else {
-    // stepper.moveTo(stepper.currentPosition() + 5000);  // Increment the target position
-    // moveBackward();
-    moveForward();
+    stepper.moveTo(stepper.currentPosition() + 5000);  // Increment the target position
   }
-  // stepper.run();  // Move the motor towards the target position
-}
-
-
-void moveForward() {
-
-  // move(stepperDelay * 2);
-  digitalWrite(dirPin, HIGH);
-
-  digitalWrite(stepPin, HIGH);
-  delayMicroseconds(stepperDelay);  //700
-  digitalWrite(stepPin, LOW);
-  delayMicroseconds(stepperDelay / 2);  //700
-                                        // delayMicroseconds(stepperDelay / 2);  //700
-                                        // Serial.println(initialPosition);
-}
-
-void moveBackward() {
-  // int forwardDelay = 3000;
-
-  // move(stepperDelay * 2);
-  digitalWrite(dirPin, LOW);
-
-  digitalWrite(stepPin, HIGH);
-  // delayMicroseconds(stepperDelay * 2);  //700
-  delayMicroseconds(stepperDelay * 2);  //700
-  digitalWrite(stepPin, LOW);
-  // delayMicroseconds(3000);  //700
-  delayMicroseconds(stepperDelay / 2);  //700
-                                        // delayMicroseconds(stepperDelay);  //700
+  stepper.run();  // Move the motor towards the target position
 }
 
 
@@ -360,6 +326,6 @@ void resetMotorPosition() {
 */
 
 void stopMotorRotation() {
-  digitalWrite(stepPin, LOW);
-  //stepper.stop();
+  //digitalWrite(stepPin, LOW);
+  stepper.stop();
 }

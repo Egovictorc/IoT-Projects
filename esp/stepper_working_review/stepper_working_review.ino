@@ -2,10 +2,10 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
-// const char* ssid = "KVRENO";
-// const char* password = "000111000";
-const char* ssid = "Ms";
-const char* password = "@12345678#";
+const char* ssid = "KVRENO";
+const char* password = "000111000";
+// const char* ssid = "Ms";
+// const char* password = "@12345678#";
 
 NetworkServer server(80);  //start a server on port 80
 
@@ -36,7 +36,7 @@ int speed = 1;
 boolean isInitialized = false;
 // int stepperDelay = 3000;
 int stepsPerRevolution = 1000;
-int stepperDelay = 4500;
+int stepperDelay = 5000;
 
 void setup() {
   // put your setup code here, to run once:
@@ -175,48 +175,50 @@ void setFactor(int speed) {
   // Serial.println(factor, 6);
   // Serial.println(" ");
 }
-
+boolean isLimiting() {
+  return digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+}
 void move() {
   // control motor movement
   //these four lines result in 1 step
   //max value = 255, max speed = 5 min value = 0
-
+  // digitalWrite(stepPin, HIGH);
   // delayMicroseconds(60 );                        //delay in milliseconds
-  // analogWrite(stepPin, 0);
+  // digitalWrite(stepPin, LOW);
   // delayMicroseconds(30);
-
-  boolean isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+  resetDelay();
+  // boolean isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
 
   // Serial.println(digitalRead(limiterPin));
   if (initialPosition < destination) {
     // digitalWrite(dirPin, LOW);
     // delayMicroseconds(pulse_delay);
-    while (initialPosition <= destination && !isLimiting) {
-      makeOneRevolution(1);
+    while (initialPosition <= destination && !isLimiting()) {
+      digitalWrite(dirPin, HIGH);
+      makeOneRevolution();
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition + factor;
-      isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+      // isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
     }
   } else {
     // digitalWrite(dirPin, HIGH);
-    while (initialPosition >= destination && !isLimiting) {
+    while (initialPosition >= destination && !isLimiting()) {
       //rotate left
-      makeOneRevolution(0);
+      digitalWrite(dirPin, LOW);
+      makeOneRevolution();
       // move backward
       Serial.println(initialPosition, 6);  //send position to serial monitor / output program
       initialPosition = initialPosition - factor;
-      isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
+      // isLimiting = digitalRead(limiterPin) == 1 || digitalRead(limiterPin_2) == 1;
     }
   }
+
   // Stop motor rotation
   stopMotorRotation();
-  /*
-  Serial.print("\nDestination ");
-  Serial.print(destination);
+}
 
-  Serial.print("\ninitialPosition ");
-  Serial.print(initialPosition);
-  */
+void resetDelay() {
+  stepperDelay = 5000;
 }
 
 
@@ -225,13 +227,11 @@ void resetMotorPosition() {
   // digitalWrite(limiterPin, LOW);
 
   //rotate left
-  // digitalWrite(dirPin, HIGH);
+  digitalWrite(dirPin, LOW);
   // check if motor has moved to start position: 0
   while (digitalRead(limiterPin) != 1) {
     // start motor anti clokwise rotation
-    makeOneRevolution(0);
-    // moveBackward();
-
+    makeOneRevolution();
     Serial.print(".");
     //delay(500);
   }
@@ -242,40 +242,15 @@ void resetMotorPosition() {
 }
 
 
-void makeOneRevolution(int direction) {
-  // int stepperDelay = 4500;
-
-  if (direction == 0) {
-    //stepper.moveTo(stepper.currentPosition() - 5000);  // Increment the target position
-    // moveBackward();
-    digitalWrite(dirPin, LOW);
-    moveNow();
-  } else {
-    // stepper.moveTo(stepper.currentPosition() + 5000);  // Increment the target position
-    // moveForward();
-    digitalWrite(dirPin, HIGH);
-    moveNow();
-  }
-  // if (stepperDelay >= 2500) {
-  //   stepperDelay -= 100;
-  // }
-  // stepper.run();  // Move the motor towards the target position
-}
-
-
-
-void moveNow() {
-  int stepperDelay = 5000;
+void makeOneRevolution() {
+  // int stepperDelay = 5000;
   // for (int x = 0; x < stepsPerRevolution; x++) {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(stepperDelay);  //700
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(stepperDelay / 2);  //700
-                                          // delayMicroseconds(stepperDelay / 2);  //700
-
-    // if (stepperDelay >= 2500) {
-    //   stepperDelay -= 100;
-    // }
+  digitalWrite(stepPin, HIGH);
+  delayMicroseconds(stepperDelay);
+  digitalWrite(stepPin, LOW);
+  delayMicroseconds(stepperDelay / 2);
+  // if (stepperDelay > 4000) {
+  //   stepperDelay -= 100;
   // }
 }
 

@@ -9,23 +9,22 @@ const char* password = "@12345678#";
 
 NetworkServer server(80);  //start a server on port 80
 
-#include <AccelStepper.h>
+// #include <AccelStepper.h>
 
 // Define motor interface type
-#define MotorInterfaceType 1  // 1 means Driver type (DIR, STEP)
+// #define MotorInterfaceType 1  // 1 means Driver type (DIR, STEP)
 
 // Define motor connections and motor interface type
 #define stepPin 14  // STEP pin
 #define dirPin 13   // DIR pin
 
 // Create an instance of AccelStepper
-AccelStepper stepper(MotorInterfaceType, stepPin, dirPin);
+// AccelStepper stepper(MotorInterfaceType, stepPin, dirPin);
 
 #define stepPin 14  //Pull -ve
 #define dirPin 13   //DIR -ve
 #define limiterPin 5
 #define limiterPin_2 4
-#define stepsPerRevolution 1000
 int pulse_delay = 1000;
 
 int mode = 1;
@@ -35,7 +34,9 @@ double initialPosition = 0.000000;
 double destination = 0.000000;
 int speed = 1;
 boolean isInitialized = false;
-int stepperDelay = 3000;
+// int stepperDelay = 3000;
+int stepsPerRevolution = 1000;
+int stepperDelay = 4500;
 
 void setup() {
   // put your setup code here, to run once:
@@ -228,8 +229,9 @@ void resetMotorPosition() {
   // check if motor has moved to start position: 0
   while (digitalRead(limiterPin) != 1) {
     // start motor anti clokwise rotation
-    // makeOneRevolution(0);
-    moveBackward();
+    makeOneRevolution(0);
+    // moveBackward();
+
     Serial.print(".");
     //delay(500);
   }
@@ -241,46 +243,72 @@ void resetMotorPosition() {
 
 
 void makeOneRevolution(int direction) {
+  // int stepperDelay = 4500;
+
   if (direction == 0) {
     //stepper.moveTo(stepper.currentPosition() - 5000);  // Increment the target position
-    // moveForward();
-    moveBackward();
+    // moveBackward();
+    digitalWrite(dirPin, LOW);
+    moveNow();
   } else {
     // stepper.moveTo(stepper.currentPosition() + 5000);  // Increment the target position
-    // moveBackward();
-    moveForward();
+    // moveForward();
+    digitalWrite(dirPin, HIGH);
+    moveNow();
   }
+  // if (stepperDelay >= 2500) {
+  //   stepperDelay -= 100;
+  // }
   // stepper.run();  // Move the motor towards the target position
 }
 
 
-void moveForward() {
 
-  // move(stepperDelay * 2);
-  digitalWrite(dirPin, HIGH);
+void moveNow() {
+  int stepperDelay = 5000;
+  // for (int x = 0; x < stepsPerRevolution; x++) {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(stepperDelay);  
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(stepperDelay / 2);  
+                                          // delayMicroseconds(stepperDelay / 2);  //700
 
-  digitalWrite(stepPin, HIGH);
-  delayMicroseconds(stepperDelay);  //700
-  digitalWrite(stepPin, LOW);
-  delayMicroseconds(stepperDelay / 2);  //700
-                                        // delayMicroseconds(stepperDelay / 2);  //700
-                                        // Serial.println(initialPosition);
+    // if (stepperDelay >= 2500) {
+    //   stepperDelay -= 100;
+    // }
+  // }
 }
 
-void moveBackward() {
-  // int forwardDelay = 3000;
 
-  // move(stepperDelay * 2);
-  digitalWrite(dirPin, LOW);
 
-  digitalWrite(stepPin, HIGH);
-  // delayMicroseconds(stepperDelay * 2);  //700
-  delayMicroseconds(stepperDelay * 2);  //700
-  digitalWrite(stepPin, LOW);
-  // delayMicroseconds(3000);  //700
-  delayMicroseconds(stepperDelay / 2);  //700
-                                        // delayMicroseconds(stepperDelay);  //700
-}
+// void moveForward() {
+
+//   // move(stepperDelay * 2);
+//   digitalWrite(dirPin, HIGH);
+
+//   digitalWrite(stepPin, HIGH);
+//   delayMicroseconds(stepperDelay);  //700
+//   digitalWrite(stepPin, LOW);
+//   delayMicroseconds(stepperDelay / 2);  //700
+//                                         // delayMicroseconds(stepperDelay / 2);  //700
+//                                         // Serial.println(initialPosition);
+// }
+
+// void moveBackward() {
+//   // int forwardDelay = 3000;
+
+//   // move(stepperDelay * 2);
+//   digitalWrite(dirPin, LOW);
+
+//   digitalWrite(stepPin, HIGH);
+//   // delayMicroseconds(stepperDelay * 2);  //700
+//   delayMicroseconds(stepperDelay * 2);  //700
+//   digitalWrite(stepPin, LOW);
+//   // delayMicroseconds(3000);  //700
+//   delayMicroseconds(stepperDelay / 2);  //700
+//                                         // delayMicroseconds(stepperDelay);  //700
+// }
+
 
 
 /*
@@ -306,40 +334,6 @@ void makeOneRevolution() {
 //     digitalWrite(stepPin, LOW);
 //     delayMicroseconds(pulse_delay);
 //     //delay(10000);
-// }
-// void leftRotateMotor() {
-//   //set motor spinning direction anti clockwise
-//   //digitalWrite(dirPin, HIGH);
-//   // start motor movement
-//   // analogWrite(stepPin, 51 * speed);
-//   //digitalWrite(stepPin, HIGH);
-
-//   for (int i = 0; i < stepsPerRevolution; i++) {
-//     digitalWrite(stepPin, HIGH);
-//     //delay(10000);
-//     delayMicroseconds(30);
-//     digitalWrite(stepPin, LOW);
-//     delayMicroseconds(30);
-//     //delay(10000);
-//   }
-// }
-
-
-// void rightRotateMotor() {
-//   //set motor spinning direction clockwise
-//   //digitalWrite(dirPin, LOW);
-//   // start motor movement
-//   // analogWrite(stepPin, 51 * speed);
-//   //digitalWrite(stepPin, HIGH);
-
-//    for (int i = 0; i < stepsPerRevolution; i++) {
-//     //delay(10000);
-//     digitalWrite(stepPin, HIGH);
-//     delayMicroseconds(30);
-//     digitalWrite(stepPin, LOW);
-//     delayMicroseconds(30);
-//     //delay(10000);
-//   }
 // }
 
 
